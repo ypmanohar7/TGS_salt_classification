@@ -40,11 +40,13 @@ from tqdm import tqdm
 from yputils.nn.unet_resnet import Unet_Resnet
 from yputils.metrics.iou_metric import my_iou_metric
 from yputils.callbacks.sgdScheduler import SGDRScheduler
+from yputils.plots.plot_history import plot_history1
+from yputils.predict.predict_results import predict_aug_result
 
 
 #Save some file names and variable names
 version = 2
-basic_name = f'Unet_resnet_v{version}'
+basic_name = f'Unet_resnet_v{version}_BCE'
 save_model_name = basic_name + '.model'
 submission_file = basic_name + '.csv'
 
@@ -108,8 +110,18 @@ history = model1.fit(x_train, y_train,
 t_model1_end = time.time()
 print(f"Run time = {(t_model1_end-t_model1_start)/3600} hours")
 
+#plot the convergence
+plot_history1(history, "loss", "my_iou_metric")
 
+#Load the trained model and predict the images
+'''
+The code till above is only required because we will use the
+above saved model as initialization for lovsaz optimization
+'''
+model = load_model(save_model_name,\
+                custom_objects={'my_iou_metric':my_iou_metric})
 
+preds_valid = predict_aug_result(model,x_train,img_size_target=101)
 
 
 #
